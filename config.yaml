@@ -1,0 +1,8 @@
+schema: spec-driven
+
+specs:
+  - specs/*.yaml
+
+context: |
+  Tech stack: Node.js, Express
+  Domain: Sistema de gestión de tareas

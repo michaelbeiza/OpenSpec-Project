@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="es" class="dark">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="view-transition" content="same-origin" />
+    <title>Objetivos | Neon UI</title>
+
+    <!-- Google Fonts: Space Grotesk -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Space Grotesk"', 'sans-serif'],
+                    },
+                    colors: {
+                        base: '#222222',
+                        surface: '#2a2a2a',
+                        surfaceHover: '#333333',
+                        neonOrange: '#ff5e00',
+                        neonOrangeDim: 'rgba(255, 94, 0, 0.15)',
+                        danger: '#ef4444',
+                        success: '#10b981',
+                        borderTrim: '#404040'
+                    },
+                    boxShadow: {
+                        'neon-glow': '0 0 15px rgba(255, 94, 0, 0.5)',
+                        'neon-glow-lg': '0 0 25px rgba(255, 94, 0, 0.6)'
+                    }
+                }
+            }
+        }
+    </script>
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <style>
+        body {
+            -webkit-font-smoothing: antialiased;
+        }
+
+        ::view-transition-old(root),
+        ::view-transition-new(root) {
+            animation-duration: 0.4s;
+            animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+        }
+
+        ::view-transition-old(root) {
+            animation-name: fade-out;
+        }
+
+        ::view-transition-new(root) {
+            animation-name: slide-up-fade-in;
+        }
+
+        @keyframes fade-out {
+            from {
+                opacity: 1;
+            }
+
+            to {
+                opacity: 0;
+            }
+        }
+
+        @keyframes slide-up-fade-in {
+            from {
+                opacity: 0;
+                transform: translateY(15px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .animate-enter {
+            animation: slide-up-fade-in 0.6s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+        }
+
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #222222;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: theme('colors.borderTrim');
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: theme('colors.neonOrange');
+        }
+
+        .task-item {
+            transition: all 0.2s ease-out;
+            animation: stagger-in 0.4s ease-out backwards;
+        }
+
+        @keyframes stagger-in {
+            from {
+                opacity: 0;
+                transform: translateY(10px) scale(0.98);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+    </style>
+</head>
+
+<body
+    class="bg-base text-gray-100 min-h-screen flex flex-col items-center p-4 selection:bg-neonOrange selection:text-white">
+
+
+    <div id="app-content" class="w-full max-w-5xl relative animate-enter">
+
+        <!-- Sidebar / Top Nav -->
+        <nav
+            class="w-full bg-surface/80 border-b border-borderTrim backdrop-blur-md px-6 py-3 flex items-center justify-between z-20 sticky top-0 shadow-lg mb-8 rounded-b-xl">
+            <div class="flex items-center gap-6">
+                <!-- Branding or Home -->
+                <div class="flex items-center gap-2 text-white font-bold tracking-wide mr-4">
+                    <i class="ph-fill ph-circles-three text-neonOrange text-xl shadow-neon-glow"></i>
+                    <span class="hidden sm:inline">OP-TRACKER</span>
+                </div>
+
+                <a href="/dashboard.html"
+                    class="flex items-center gap-2 text-neonOrange hover:text-white hover:drop-shadow-[0_0_5px_rgba(255,94,0,0.5)] transition-all text-sm font-medium">
+                    <i class="ph ph-chart-line-up fs-4"></i>
+                    <span style="view-transition-name: nav-dash;">Dashboard Personal</span>
+                </a>
+                <a href="/global-dashboard.html" id="nav-global"
+                    class="hidden items-center gap-2 text-gray-400 hover:text-white hover:drop-shadow-[0_0_5px_rgba(255,255,255,0.5)] transition-all text-sm font-medium">
+                    <i class="ph ph-globe-hemisphere-west fs-4"></i>
+                    <span class="inline-block">Dashboard Global</span>
+                </a>
+                <a href="/users.html" id="nav-users"
+                    class="hidden items-center gap-2 text-gray-400 hover:text-white hover:drop-shadow-[0_0_5px_rgba(255,255,255,0.5)] transition-all text-sm font-medium">
+                    <i class="ph ph-users fs-4"></i>
+                    <span class="inline-block" style="view-transition-name: nav-text;">Gestionar Usuarios</span>
+                </a>
+            </div>
+
+            <button onclick="logout()"
+                class="flex items-center gap-2 px-4 py-2 rounded-lg bg-danger/10 border border-danger/30 text-danger hover:bg-danger hover:text-white hover:shadow-[0_0_15px_rgba(239,68,68,0.5)] transition-all text-sm font-bold tracking-wider">
+                <i class="ph ph-power"></i>
+                <span class="hidden sm:inline">DESCONECTAR</span>
+            </button>
+        </nav>
+
+        <div style="view-transition-name: main-container;"
+            class="bg-surface border border-borderTrim rounded-2xl shadow-xl p-6 md:p-8 backdrop-blur-xl relative overflow-hidden">
+            <div
+                class="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-transparent via-neonOrange to-transparent opacity-70">
+            </div>
+
+            <div class="text-center mb-8">
+                <h1 class="text-3xl md:text-4xl font-bold tracking-tight mb-2 text-white drop-shadow-md">Tus Objetivos
+                </h1>
+                <p class="text-neonOrange text-sm font-medium uppercase tracking-widest"><span id="welcome-user"></span>
+                    - Sesión Activa</p>
+            </div>
+
+
+            <!-- Form -->
+            <form id="task-form" onsubmit="handleAddTask(event)" class="mb-8 relative group">
+                <div
+                    class="flex items-center bg-base border border-borderTrim rounded-xl overflow-hidden focus-within:border-neonOrange focus-within:shadow-neon-glow transition-all duration-300">
+                    <div class="px-4 border-r border-borderTrim text-neonOrange">
+                        <i class="ph ph-target text-2xl"></i>
+                    </div>
+                    <input type="text" id="task-input"
+                        class="bg-transparent text-white placeholder-gray-600 outline-none px-4 py-4 w-full"
+                        placeholder="¿Qué nueva meta privada vas a registrar?" autocomplete="off" required>
+                    <button type="submit" id="add-btn"
+                        class="bg-neonOrange text-black px-6 py-4 font-bold text-base hover:bg-[#ff7b33] transition-colors flex items-center justify-center min-w-[100px]">
+                        <span class="btn-text">CREAR</span>
+                        <i class="ph-bold ph-spinner animate-spin hidden text-xl" id="add-spinner"></i>
+                    </button>
+                </div>
+            </form>
+
+            <div id="error-alert"
+                class="hidden mb-4 p-3 rounded-lg bg-red-900/30 border border-red-500/50 text-red-400 text-sm text-center flex items-center justify-center gap-2">
+                <i class="ph-fill ph-warning-circle text-lg"></i>
+                <span id="error-text">Error message</span>
+            </div>
+
+            <!-- Task List -->
+            <ul class="space-y-3" id="task-list">
+                <div class="flex items-center justify-center py-10">
+                    <i class="ph-bold ph-spinner-gap animate-spin text-neonOrange text-3xl"></i>
+                </div>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Script Application Logic -->
+    <script>
+        const taskInput = document.getElementById('task-input');
+        const taskList = document.getElementById('task-list');
+        const errorAlert = document.getElementById('error-alert');
+        const errorText = document.getElementById('error-text');
+
+        let isFetching = false;
+
+        const badgeStyles = {
+            'pendiente': 'bg-blue-500/10 text-blue-400 border border-blue-500/20',
+            'en_progreso': 'bg-neonOrangeDim text-neonOrange border border-neonOrange/30',
+            'completada': 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
+        };
+        const listStyles = {
+            'pendiente': 'border-l-blue-500',
+            'en_progreso': 'border-l-neonOrange shadow-[inset_2px_0_0_rgba(255,94,0,0.5)]',
+            'completada': 'border-l-emerald-500 opacity-60'
+        };
+
+        function showError(message) {
+            errorText.textContent = message;
+            errorAlert.classList.remove('hidden');
+            setTimeout(() => errorAlert.classList.add('hidden'), 4000);
+        }
+
+        function escapeHTML(str) {
+            return str.replace(/[&<>'"]/g, t => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[t] || t));
+        }
+
+        function logout() {
+            localStorage.removeItem('token');
+            localStorage.removeItem('username');
+            localStorage.removeItem('rol');
+            window.location.href = '/index.html';
+        }
+
+        function getToken() { return localStorage.getItem('token'); }
+
+        async function fetchTasks() {
+            try {
+                const res = await fetch('/tareas', {
+                    headers: { 'Authorization': `Bearer ${getToken()}` }
+                });
+                if (res.status === 401) { logout(); return; }
+                if (!res.ok) throw new Error('Error al conectar con la API.');
+
+                const tasks = await res.json();
+                renderTasks(tasks);
+            } catch (err) {
+                taskList.innerHTML = `<div class="text-center text-red-400 py-6 border border-red-500/20 rounded-xl bg-red-900/10">${err.message}</div>`;
+            }
+        }
+
+        function renderTasks(tasks) {
+            taskList.innerHTML = '';
+            if (tasks.length === 0) {
+                taskList.innerHTML = `
+                <div class="text-center py-10 border border-dashed border-borderTrim rounded-xl flex flex-col items-center justify-center text-gray-500">
+                    <i class="ph ph-ghost text-4xl mb-2"></i>
+                    <p>No tienes objetivos privados activos. ¡Crea el primero!</p>
+                </div>`;
+                return;
+            }
+
+            [...tasks].reverse().forEach((task, index) => {
+                const li = document.createElement('li');
+                const estadoClean = task.estado ? task.estado.replace('_', ' ') : 'pendiente';
+
+                li.className = `task-item bg-base border border-borderTrim border-l-2 ${listStyles[task.estado] || 'border-l-gray-600'} rounded-xl p-4 flex justify-between items-center group hover:border-r-gray-600 cursor-default`;
+                li.style.animationDelay = `${index * 0.05}s`;
+
+                li.innerHTML = `
+                <div class="flex flex-col gap-1 pr-4 truncate">
+                    <span class="font-medium text-white truncate text-[0.95rem] tracking-wide" title="${escapeHTML(task.titulo || '')}">${escapeHTML(task.titulo || '')}</span>
+                </div>
+                <div class="flex items-center gap-3 shrink-0">
+                    <span class="px-2.5 py-0.5 rounded-full text-[0.65rem] font-bold uppercase tracking-wider ${badgeStyles[task.estado] || ''}">
+                        ${estadoClean}
+                    </span>
+                    <a href="/task-details.html?id=${escapeHTML(task.id)}" class="w-8 h-8 flex items-center justify-center rounded-lg bg-surfaceHover border border-borderTrim text-gray-400 hover:text-neonOrange hover:border-neonOrange hover:shadow-neon-glow transition-all">
+                        <i class="ph-bold ph-caret-right"></i>
+                    </a>
+                </div>`;
+                taskList.appendChild(li);
+            });
+        }
+
+        async function handleAddTask(e) {
+            e.preventDefault();
+            const value = taskInput.value.trim();
+            if (!value) return showError('El objetivo no puede estar vacío.');
+
+            if (isFetching) return;
+            isFetching = true;
+
+            document.querySelector('.btn-text').classList.add('hidden');
+            document.getElementById('add-spinner').classList.remove('hidden');
+            document.getElementById('add-btn').disabled = true;
+
+            try {
+                const response = await fetch('/tareas', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${getToken()}` },
+                    body: JSON.stringify({ titulo: value })
+                });
+
+                if (response.status === 401) { logout(); return; }
+                const data = await response.json();
+                if (!response.ok) throw new Error(data.error || 'Ocurrió un error al añadir.');
+
+                taskInput.value = '';
+                await fetchTasks();
+            } catch (err) {
+                showError(err.message);
+            } finally {
+                isFetching = false;
+                document.querySelector('.btn-text').classList.remove('hidden');
+                document.getElementById('add-spinner').classList.add('hidden');
+                document.getElementById('add-btn').disabled = false;
+                taskInput.focus();
+            }
+        }
+
+        function bootstrapApp() {
+            if (!getToken()) {
+                window.location.href = '/index.html';
+                return;
+            }
+
+            if (localStorage.getItem('rol') === 'admin') {
+                const navUsers = document.getElementById('nav-users');
+                navUsers.classList.remove('hidden');
+                navUsers.classList.add('flex');
+
+                const navGlobal = document.getElementById('nav-global');
+                navGlobal.classList.remove('hidden');
+                navGlobal.classList.add('flex');
+            }
+
+            document.getElementById('welcome-user').textContent = localStorage.getItem('username') || 'Unidad';
+            fetchTasks();
+        }
+
+        // INIT
+        bootstrapApp();
+    </script>
+</body>
+
+</html>

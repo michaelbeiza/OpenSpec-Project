@@ -1,0 +1,14 @@
+# Dependencias de Node
+node_modules/
+
+# Base de datos
+*.sqlite
+
+# Archivos de entorno y logs
+.env
+npm-debug.log
+
+# Archivos de la IA
+.agent/
+*.inst.json
+.openspec-status.json

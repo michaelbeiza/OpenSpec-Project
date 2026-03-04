@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="es" class="dark">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="view-transition" content="same-origin" />
+    <title>Detalles Objetivo | Neon UI</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['"Space Grotesk"', 'sans-serif'] },
+                    colors: {
+                        base: '#222222',
+                        surface: '#2a2a2a',
+                        surfaceHover: '#333333',
+                        neonOrange: '#ff5e00',
+                        neonOrangeDim: 'rgba(255, 94, 0, 0.15)',
+                        borderTrim: '#404040'
+                    },
+                    boxShadow: { 'neon-glow': '0 0 15px rgba(255, 94, 0, 0.5)' }
+                }
+            }
+        }
+    </script>
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <style>
+        body {
+            -webkit-font-smoothing: antialiased;
+        }
+
+        ::view-transition-old(root),
+        ::view-transition-new(root) {
+            animation-duration: 0.4s;
+            animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+        }
+
+        ::view-transition-old(root) {
+            animation-name: fade-out;
+        }
+
+        ::view-transition-new(root) {
+            animation-name: slide-up-fade-in;
+        }
+
+        @keyframes fade-out {
+            from {
+                opacity: 1;
+            }
+
+            to {
+                opacity: 0;
+            }
+        }
+
+        @keyframes slide-up-fade-in {
+            from {
+                opacity: 0;
+                transform: translateY(15px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .animate-enter {
+            animation: slide-up-fade-in 0.6s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+        }
+
+        input[type="number"]::-webkit-inner-spin-button,
+        input[type="number"]::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        .toast-show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        .toast-hide {
+            transform: translateY(100px);
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        #notify-toast {
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.3s ease;
+        }
+    </style>
+</head>
+
+<body
+    class="bg-base text-gray-100 min-h-screen flex flex-col items-center p-4 selection:bg-neonOrange selection:text-white hidden"
+    id="body-container">
+
+    <div class="w-full max-w-5xl relative animate-enter" style="view-transition-name: main-container;">
+
+        <div id="loader"
+            class="absolute inset-0 z-50 bg-base/80 backdrop-blur-sm flex items-center justify-center rounded-2xl hidden">
+            <i
+                class="ph-bold ph-spinner animate-spin text-neonOrange text-5xl drop-shadow-[0_0_15px_rgba(255,94,0,0.8)]"></i>
+        </div>
+
+        <!-- Sidebar / Top Nav -->
+        <nav
+            class="w-full bg-surface/80 border-b border-borderTrim backdrop-blur-md px-6 py-3 flex items-center justify-between z-20 sticky top-0 shadow-lg mb-8 rounded-b-xl">
+            <div class="flex items-center gap-6">
+                <!-- Branding or Home -->
+                <div class="flex items-center gap-2 text-white font-bold tracking-wide mr-4">
+                    <i class="ph-fill ph-circles-three text-neonOrange text-xl shadow-neon-glow"></i>
+                    <span class="hidden sm:inline">OP-TRACKER</span>
+                </div>
+
+                <a href="/todo.html"
+                    class="flex items-center gap-2 text-gray-400 hover:text-white transition-colors font-medium">
+                    <i class="ph ph-arrow-left text-xl"></i>
+                    <span style="view-transition-name: nav-text;">Volver a Mis Objetivos</span>
+                </a>
+            </div>
+
+            <div
+                class="flex items-center gap-2 text-neonOrange font-bold text-lg tracking-wide drop-shadow-[0_0_8px_rgba(255,94,0,0.8)]">
+                <i class="ph-fill ph-file-text"></i>
+                <span class="hidden sm:inline">INSPECCIÓN</span>
+            </div>
+
+            <button onclick="logout()"
+                class="hidden sm:flex items-center gap-2 px-4 py-2 rounded-lg bg-danger/10 border border-danger/30 text-danger hover:bg-danger hover:text-white hover:shadow-[0_0_15px_rgba(239,68,68,0.5)] transition-all text-sm font-bold tracking-wider">
+                <i class="ph ph-power"></i>
+                <span>DESCONECTAR</span>
+            </button>
+        </nav>
+
+        <div class="bg-surface border border-borderTrim rounded-2xl shadow-2xl p-6 md:p-10 relative overflow-hidden">
+            <div
+                class="absolute top-0 left-0 w-[4px] h-full bg-gradient-to-b from-neonOrange via-neonOrange to-transparent opacity-80 shadow-[5px_0_15px_rgba(255,94,0,0.6)]">
+            </div>
+
+            <div class="flex items-center gap-4 mb-8 pb-6 border-b border-borderTrim">
+                <div
+                    class="w-14 h-14 rounded-xl bg-surfaceHover border border-neonOrange/30 text-neonOrange flex items-center justify-center text-3xl shadow-[0_0_10px_rgba(255,94,0,0.2)]">
+                    <i class="ph-bold ph-target"></i>
+                </div>
+                <div>
+                    <h1 class="text-3xl font-bold tracking-tight text-white m-0">Revisión de Archivo</h1>
+                    <p class="text-neonOrange text-sm font-medium uppercase tracking-widest mt-1">Propiedad de tu unidad
+                    </p>
+                </div>
+            </div>
+
+            <form id="task-form" onsubmit="handleSave(event)" class="space-y-6 relative">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="md:col-span-2 space-y-2">
+                        <label for="titulo"
+                            class="block text-xs font-bold text-gray-500 uppercase tracking-widest">Designación
+                            Principal</label>
+                        <input type="text" id="titulo"
+                            class="w-full bg-base border border-borderTrim rounded-lg px-4 py-3 text-white focus:border-neonOrange focus:shadow-neon-glow outline-none transition-all placeholder-gray-700"
+                            required>
+                    </div>
+
+                    <div class="space-y-2">
+                        <label for="estado"
+                            class="block text-xs font-bold text-gray-500 uppercase tracking-widest">Nivel de
+                            Avance</label>
+                        <select id="estado"
+                            class="w-full bg-base border border-borderTrim rounded-lg px-4 py-3 text-white focus:border-neonOrange focus:shadow-neon-glow outline-none transition-all cursor-pointer appearance-none">
+                            <option value="pendiente">Pendiente</option>
+                            <option value="en_progreso">En Progreso</option>
+                            <option value="completada">Completada</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="space-y-2">
+                    <label for="descripcion"
+                        class="block text-xs font-bold text-gray-500 uppercase tracking-widest">Bitácora / Detalles
+                        Extras</label>
+                    <textarea id="descripcion" rows="4"
+                        class="w-full bg-base border border-borderTrim rounded-lg px-4 py-3 text-white focus:border-neonOrange focus:shadow-neon-glow outline-none transition-all placeholder-gray-700 resize-y"></textarea>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="space-y-2">
+                        <label for="horas"
+                            class="block text-xs font-bold text-gray-500 uppercase tracking-widest">Ciclos Dedicados
+                            (Horas)</label>
+                        <div class="flex relative items-center">
+                            <span class="absolute left-4 text-gray-500"><i
+                                    class="ph-fill ph-clock-countdown text-xl"></i></span>
+                            <input type="number" id="horas" placeholder="Ej. 2.5" min="0" step="0.5"
+                                class="w-full bg-base border border-borderTrim rounded-lg pl-12 pr-4 py-3 text-white focus:border-neonOrange focus:shadow-neon-glow outline-none transition-all placeholder-gray-700">
+                        </div>
+                    </div>
+
+                    <div class="space-y-2">
+                        <label for="ubicacion"
+                            class="block text-xs font-bold text-gray-500 uppercase tracking-widest">Vector /
+                            Ubicación</label>
+                        <div class="flex relative items-center">
+                            <span class="absolute left-4 text-gray-500"><i
+                                    class="ph-fill ph-map-pin text-xl"></i></span>
+                            <input type="text" id="ubicacion" placeholder="Enlace o coordenadas locales"
+                                class="w-full bg-base border border-borderTrim rounded-lg pl-12 pr-4 py-3 text-white focus:border-neonOrange focus:shadow-neon-glow outline-none transition-all placeholder-gray-700">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="pt-8 mt-4 border-t border-borderTrim flex justify-end">
+                    <button type="submit" id="save-btn"
+                        class="bg-neonOrange hover:bg-[#ff7b33] text-black font-bold text-[0.95rem] tracking-wide px-8 py-3.5 rounded-lg flex items-center justify-center gap-2 transition-all hover:shadow-[0_0_20px_rgba(255,94,0,0.4)]">
+                        <i class="ph-bold ph-floppy-disk text-lg"></i>
+                        <span>SOBRESCRIBIR DATOS</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="fixed bottom-6 right-6 z-50">
+        <div id="notify-toast"
+            class="toast-hide flex items-center gap-3 px-5 py-4 rounded-xl shadow-2xl bg-surface border border-borderTrim">
+            <i id="toast-icon" class="ph-fill ph-check-circle text-2xl text-success"></i>
+            <span id="toast-msg" class="font-medium text-sm tracking-wide text-white">Mensaje</span>
+        </div>
+    </div>
+
+    <script>
+        if (!localStorage.getItem('token')) {
+            window.location.href = '/index.html';
+        } else {
+            document.getElementById('body-container').classList.remove('hidden');
+        }
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const taskId = urlParams.get('id');
+        const loader = document.getElementById('loader');
+
+        const inputTitulo = document.getElementById('titulo');
+        const inputEstado = document.getElementById('estado');
+        const inputDescripcion = document.getElementById('descripcion');
+        const inputHoras = document.getElementById('horas');
+        const inputUbicacion = document.getElementById('ubicacion');
+
+        const toastEl = document.getElementById('notify-toast');
+        const toastMsg = document.getElementById('toast-msg');
+        const toastIcon = document.getElementById('toast-icon');
+
+        let toastTimeout;
+        function showNotify(msg, isSuccess = true) {
+            clearTimeout(toastTimeout);
+            toastMsg.textContent = msg;
+
+            if (!isSuccess) {
+                toastEl.className = 'toast-show flex items-center gap-3 px-5 py-4 rounded-xl shadow-2xl bg-surface border border-red-500/50';
+                toastMsg.className = 'font-medium text-sm tracking-wide text-red-400';
+                toastIcon.className = 'ph-fill ph-warning-circle text-2xl text-red-500 drop-shadow-[0_0_5px_rgba(239,68,68,0.8)]';
+            } else {
+                toastEl.className = 'toast-show flex items-center gap-3 px-5 py-4 rounded-xl shadow-2xl bg-surface border border-emerald-500/50';
+                toastMsg.className = 'font-medium text-sm tracking-wide text-emerald-400';
+                toastIcon.className = 'ph-fill ph-check-circle text-2xl text-emerald-500 drop-shadow-[0_0_5px_rgba(16,185,129,0.8)]';
+            }
+            toastTimeout = setTimeout(() => { toastEl.classList.replace('toast-show', 'toast-hide'); }, 4000);
+        }
+
+        function authFetch(url, options = {}) {
+            const token = localStorage.getItem('token');
+            const headers = { ...options.headers, 'Authorization': `Bearer ${token}` };
+            return fetch(url, { ...options, headers });
+        }
+
+        async function fetchTask() {
+            if (!taskId) return showNotify('Identificador corrupto.', false);
+            loader.classList.remove('hidden');
+
+            try {
+                const res = await authFetch(`/tareas/${taskId}`);
+                if (res.status === 401 || res.status === 404) throw new Error('Acceso denegado o archivo no encontrado.');
+                if (!res.ok) throw new Error('Error al extraer archivo.');
+
+                const task = await res.json();
+                inputTitulo.value = task.titulo || '';
+                inputEstado.value = task.estado || 'pendiente';
+                inputDescripcion.value = task.descripcion || '';
+                inputHoras.value = (task.horas !== undefined && task.horas !== null) ? task.horas : '';
+                inputUbicacion.value = task.ubicacion || '';
+                document.title = `Modificando: ${task.titulo}`;
+            } catch (err) {
+                showNotify(err.message, false);
+            } finally {
+                loader.classList.add('hidden');
+            }
+        }
+
+        async function handleSave(e) {
+            e.preventDefault();
+
+            const payload = {
+                titulo: inputTitulo.value.trim(),
+                estado: inputEstado.value
+            };
+
+            if (inputDescripcion.value.trim() !== '') payload.descripcion = inputDescripcion.value.trim();
+            if (inputHoras.value !== '') payload.horas = Number(inputHoras.value);
+            if (inputUbicacion.value.trim() !== '') payload.ubicacion = inputUbicacion.value.trim();
+
+            const saveBtn = document.getElementById('save-btn');
+            saveBtn.disabled = true;
+            const originalHTML = saveBtn.innerHTML;
+            saveBtn.innerHTML = '<i class="ph-bold ph-spinner animate-spin text-lg"></i><span>PROCESANDO...</span>';
+
+            try {
+                const res = await authFetch(`/tareas/${taskId}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error || 'Volcado de memoria fallido.');
+
+                showNotify('Base de datos sincronizada.', true);
+            } catch (err) {
+                showNotify(err.message, false);
+            } finally {
+                saveBtn.disabled = false;
+                saveBtn.innerHTML = originalHTML;
+            }
+        }
+
+        if (taskId) fetchTask();
+    </script>
+</body>
+
+</html>

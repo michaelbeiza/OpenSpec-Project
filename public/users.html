@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="es" class="dark">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="view-transition" content="same-origin" />
+    <title>Usuarios | Neon UI</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['"Space Grotesk"', 'sans-serif'] },
+                    colors: {
+                        base: '#222222',
+                        surface: '#2a2a2a',
+                        surfaceHover: '#333333',
+                        neonOrange: '#ff5e00',
+                        neonOrangeDim: 'rgba(255, 94, 0, 0.15)',
+                        borderTrim: '#404040'
+                    },
+                    boxShadow: { 'neon-glow': '0 0 15px rgba(255, 94, 0, 0.5)' }
+                }
+            }
+        }
+    </script>
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            -webkit-font-smoothing: antialiased;
+        }
+
+        ::view-transition-old(root),
+        ::view-transition-new(root) {
+            animation-duration: 0.4s;
+            animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+        }
+
+        ::view-transition-old(root) {
+            animation-name: fade-out;
+        }
+
+        ::view-transition-new(root) {
+            animation-name: slide-up-fade-in;
+        }
+
+        @keyframes fade-out {
+            from {
+                opacity: 1;
+            }
+
+            to {
+                opacity: 0;
+            }
+        }
+
+        @keyframes slide-up-fade-in {
+            from {
+                opacity: 0;
+                transform: translateY(15px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .animate-enter {
+            animation: slide-up-fade-in 0.6s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+        }
+
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #222222;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: theme('colors.borderTrim');
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: theme('colors.neonOrange');
+        }
+
+        .list-group-item-user {
+            transition: all 0.2s ease-out;
+        }
+
+        .list-group-item-user.active {
+            background-color: theme('colors.neonOrangeDim') !important;
+            border-left-color: theme('colors.neonOrange') !important;
+            box-shadow: inset 4px 0 0 theme('colors.neonOrange');
+        }
+
+        .list-group-item-user.active .user-avatar {
+            background-color: theme('colors.neonOrange');
+            color: white;
+            box-shadow: 0 0 10px rgba(255, 94, 0, 0.5);
+        }
+
+        .toast-show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        .toast-hide {
+            transform: translateY(100px);
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        #notify-toast {
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.3s ease;
+        }
+    </style>
+</head>
+
+<body
+    class="bg-base text-gray-100 h-screen flex flex-col overflow-hidden selection:bg-neonOrange selection:text-white hidden"
+    id="body-container">
+
+    <!-- Sidebar / Top Nav -->
+    <nav
+        class="w-full bg-surface/80 border-b border-borderTrim backdrop-blur-md px-6 py-3 flex items-center justify-between z-20 sticky top-0 shadow-lg mb-0">
+        <div class="flex items-center gap-6">
+            <!-- Branding or Home -->
+            <div class="flex items-center gap-2 text-white font-bold tracking-wide mr-4">
+                <i class="ph-fill ph-circles-three text-neonOrange text-xl shadow-neon-glow"></i>
+                <span class="hidden sm:inline">OP-TRACKER</span>
+            </div>
+
+            <a href="/dashboard.html"
+                class="flex items-center gap-2 text-gray-400 hover:text-white transition-colors font-medium">
+                <i class="ph ph-arrow-left text-xl"></i>
+                <span style="view-transition-name: nav-text;">Volver al Panel</span>
+            </a>
+        </div>
+
+        <div
+            class="flex items-center gap-2 text-neonOrange font-bold text-lg tracking-wide drop-shadow-[0_0_8px_rgba(255,94,0,0.8)]">
+            <i class="ph-fill ph-users"></i>
+            <span class="hidden sm:inline">GESTIONAR USUARIOS</span>
+        </div>
+
+        <button onclick="logout()"
+            class="hidden sm:flex items-center gap-2 px-4 py-2 rounded-lg bg-danger/10 border border-danger/30 text-danger hover:bg-danger hover:text-white hover:shadow-[0_0_15px_rgba(239,68,68,0.5)] transition-all text-sm font-bold tracking-wider">
+            <i class="ph ph-power"></i>
+            <span>DESCONECTAR</span>
+        </button>
+    </nav>
+
+    <div class="flex flex-1 overflow-hidden animate-enter" style="view-transition-name: main-container;">
+
+        <!-- Sidebar -->
+        <div class="w-80 bg-surface border-r border-borderTrim flex flex-col shrink-0 relative z-10">
+            <div
+                class="p-4 border-b border-borderTrim bg-base text-gray-400 text-sm font-bold tracking-widest uppercase">
+                Red Global Operativa
+            </div>
+            <div class="flex-1 overflow-y-auto">
+                <ul id="user-list" class="flex flex-col">
+                    <div class="flex justify-center py-8"><i
+                            class="ph-bold ph-spinner animate-spin text-neonOrange text-2xl"></i></div>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="flex-1 bg-base relative flex items-center justify-center p-4 md:p-6 overflow-y-auto">
+            <div id="empty-pane" class="text-center text-gray-500 max-w-sm flex flex-col items-center">
+                <div
+                    class="w-24 h-24 rounded-full border border-dashed border-borderTrim flex items-center justify-center mb-6">
+                    <i class="ph ph-user-focus text-5xl opacity-50"></i>
+                </div>
+                <h2 class="text-xl font-bold text-white mb-2 tracking-wide">Selección Inactiva</h2>
+                <p class="text-sm">Selecciona una unidad del registro global para auditar sus métricas de objetivos.</p>
+            </div>
+
+            <div id="details-pane"
+                class="hidden w-full max-w-2xl bg-surface border border-borderTrim rounded-2xl shadow-xl p-6 md:p-8 relative overflow-hidden">
+                <div
+                    class="absolute -top-32 -right-32 w-64 h-64 bg-neonOrange rounded-full mix-blend-screen filter blur-[100px] opacity-10 pointer-events-none">
+                </div>
+
+                <div class="flex items-center mb-6 pb-4 border-b border-borderTrim">
+                    <div class="w-14 h-14 rounded-xl bg-surfaceHover border border-neonOrange text-neonOrange flex items-center justify-center text-xl font-bold shadow-neon-glow shrink-0 mr-4"
+                        id="pane-avatar">?</div>
+                    <div>
+                        <h2 class="text-xl font-bold text-white tracking-tight" id="disp-name">Perfil Acreditado</h2>
+                        <p class="text-neonOrange text-sm font-medium uppercase tracking-widest mt-1">Status: Registrado
+                        </p>
+                    </div>
+                </div>
+
+                <div class="mb-8">
+                    <label class="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">Credencial
+                        UID</label>
+                    <input type="text" id="edit-id"
+                        class="w-full bg-base border border-borderTrim rounded-lg px-4 py-3 text-gray-400 text-sm cursor-not-allowed font-mono"
+                        disabled>
+                </div>
+
+                <div class="flex flex-wrap gap-3 mb-8 pb-6 border-b border-borderTrim">
+                    <button
+                        class="bg-transparent border border-danger text-danger hover:bg-danger/10 font-bold px-6 py-3 rounded-lg flex items-center justify-center gap-2 transition-colors"
+                        onclick="deleteUser()">
+                        <i class="ph-bold ph-trash"></i> PURGAR UNIDAD
+                    </button>
+                    <p class="text-xs text-gray-500 mt-2 ml-2 max-w-sm">Purgar a un usuario elimina por completo sus
+                        credenciales de acceso y sus objetivos asosciados irrevocablemente.</p>
+                </div>
+
+                <div>
+                    <h3
+                        class="text-sm font-bold text-gray-400 uppercase tracking-widest flex items-center gap-2 mb-4 mt-6">
+                        <i class="ph-fill ph-chart-donut text-neonOrange"></i> Rendimiento del Operador
+                    </h3>
+
+                    <div class="mb-6 w-full h-64 bg-base border border-borderTrim rounded-xl p-4 relative"
+                        id="user-chart-container" style="display: none;">
+                        <canvas id="userMissionChart"></canvas>
+                    </div>
+
+                    <h3 class="text-sm font-bold text-gray-400 uppercase tracking-widest flex items-center gap-2 mb-4">
+                        <i class="ph-fill ph-target text-neonOrange"></i> Objetivos de la Unidad
+                    </h3>
+                    <div id="assigned-tasks-list" class="space-y-2"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div class="fixed bottom-6 right-6 z-50">
+        <div id="notify-toast"
+            class="toast-hide flex items-center gap-3 px-5 py-4 rounded-xl border shadow-xl bg-surface/90 backdrop-blur-md">
+            <i id="toast-icon" class="ph-fill ph-check-circle text-2xl"></i>
+            <span id="toast-msg" class="font-medium text-sm tracking-wide">Mensaje</span>
+        </div>
+    </div>
+
+    <script>
+        // Auth barrier
+        if (!localStorage.getItem('token') || localStorage.getItem('rol') !== 'admin') {
+            window.location.href = '/dashboard.html';
+        } else {
+            document.getElementById('body-container').classList.remove('hidden');
+        }
+
+        let users = [];
+        let selectedUserId = null;
+        let userChart = null;
+
+        Chart.defaults.color = '#9ca3af';
+        Chart.defaults.font.family = '"Space Grotesk", sans-serif';
+
+        const userListEl = document.getElementById('user-list');
+        const emptyPane = document.getElementById('empty-pane');
+        const detailsPane = document.getElementById('details-pane');
+
+        const toastEl = document.getElementById('notify-toast');
+        const toastMsg = document.getElementById('toast-msg');
+        const toastIcon = document.getElementById('toast-icon');
+
+        let toastTimeout;
+        function showToast(msg, isError = false) {
+            clearTimeout(toastTimeout);
+            toastMsg.textContent = msg;
+
+            if (isError) {
+                toastEl.className = 'toast-show flex items-center gap-3 px-5 py-4 rounded-xl shadow-xl bg-surface border border-danger/50';
+                toastMsg.className = 'font-medium text-sm tracking-wide text-danger';
+                toastIcon.className = 'ph-fill ph-warning-circle text-2xl text-danger drop-shadow-[0_0_5px_rgba(239,68,68,0.8)]';
+            } else {
+                toastEl.className = 'toast-show flex items-center gap-3 px-5 py-4 rounded-xl shadow-xl bg-surface border border-success/50';
+                toastMsg.className = 'font-medium text-sm tracking-wide text-success';
+                toastIcon.className = 'ph-fill ph-check-circle text-2xl text-success drop-shadow-[0_0_5px_rgba(16,185,129,0.8)]';
+            }
+
+            toastTimeout = setTimeout(() => { toastEl.classList.replace('toast-show', 'toast-hide'); }, 4000);
+        }
+
+        function escapeHTML(str) {
+            if (!str) return '';
+            return str.replace(/[&<>'"]/g, tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag));
+        }
+
+        function authFetch(url, options = {}) {
+            const token = localStorage.getItem('token');
+            const headers = { ...options.headers, 'Authorization': `Bearer ${token}` };
+            return fetch(url, { ...options, headers });
+        }
+
+        async function init() {
+            await fetchUsers();
+            renderUserList();
+        }
+
+        async function fetchUsers() {
+            try {
+                const res = await authFetch('/usuarios'); // Global logic doesn't require auth but good practice
+                if (res.ok) users = await res.json();
+            } catch { showToast('Error conectando al servidor', true); }
+        }
+
+        function renderUserList() {
+            userListEl.innerHTML = '';
+            if (users.length === 0) {
+                userListEl.innerHTML = `<div class="p-6 text-center text-gray-600">Registro vacío.</div>`;
+                if (selectedUserId) selectUser(null);
+                return;
+            }
+
+            if (selectedUserId && !users.find(u => u.id === selectedUserId)) selectUser(null);
+
+            users.forEach(user => {
+                const initial = user.username ? user.username.charAt(0).toUpperCase() : '?';
+                const li = document.createElement('li');
+                li.className = `list-group-item-user flex items-center gap-3 px-6 py-4 border-b border-borderTrim cursor-pointer hover:bg-surfaceHover border-l-4 border-l-transparent ${selectedUserId === user.id ? 'active' : ''}`;
+                li.onclick = () => selectUser(user.id);
+                li.innerHTML = `
+                    <div class="user-avatar w-10 h-10 rounded-full bg-base border border-borderTrim flex items-center justify-center font-bold text-gray-400 shrink-0 transition-all">${initial}</div>
+                    <div class="truncate text-sm font-medium tracking-wide">${escapeHTML(user.username)}</div>
+                `;
+                userListEl.appendChild(li);
+            });
+        }
+
+        async function selectUser(id) {
+            selectedUserId = id;
+            renderUserList();
+
+            if (!id) {
+                emptyPane.classList.remove('hidden');
+                detailsPane.classList.add('hidden');
+                return;
+            }
+
+            const user = users.find(u => u.id === id);
+            if (!user) return;
+
+            emptyPane.classList.add('hidden');
+            detailsPane.classList.remove('hidden');
+
+            document.getElementById('pane-avatar').textContent = user.username.charAt(0).toUpperCase();
+            document.getElementById('disp-name').textContent = Math.random() > 0.5 ? 'Unidad Operativa ' + user.username : 'Especialista ' + user.username;
+            document.getElementById('edit-id').value = user.id;
+
+            await renderAssignedTasks(user.id);
+        }
+
+        async function renderAssignedTasks(userId) {
+            const list = document.getElementById('assigned-tasks-list');
+            try {
+                const res = await authFetch(`/usuarios/${userId}/tareas`);
+                if (res.status === 401) {
+                    list.innerHTML = `<div class="p-4 border border-dashed border-red-500/30 rounded-lg text-red-500 text-sm">Privilegios Insuficientes: No puedes auditar tareas ajenas sin rol de administrador.</div>`;
+                    return;
+                }
+                const userTasks = await res.json();
+
+                const chartContainerEl = document.getElementById('user-chart-container');
+
+                if (!userTasks || userTasks.length === 0) {
+                    list.innerHTML = `<div class="p-4 border border-dashed border-borderTrim rounded-lg flex items-center justify-center text-gray-500 text-sm gap-2 bg-base"><i class="ph ph-coffee text-lg"></i> Operador sin tareas.</div>`;
+                    chartContainerEl.style.display = 'none';
+                    return;
+                }
+
+                list.innerHTML = '';
+                chartContainerEl.style.display = 'block';
+
+                let completadasCount = 0;
+                let pendientesCount = 0;
+
+                const badgeClasses = {
+                    'pendiente': 'bg-blue-500/10 text-blue-400 border border-blue-500/20',
+                    'en_progreso': 'bg-neonOrangeDim text-neonOrange border border-neonOrange/30',
+                    'completada': 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
+                };
+
+                userTasks.forEach(task => {
+                    if (task.estado === 'completada') completadasCount++;
+                    else pendientesCount++;
+
+                    const bClass = badgeClasses[task.estado] || badgeClasses['pendiente'];
+                    const div = document.createElement('div');
+                    div.className = `flex justify-between items-center p-4 rounded-xl bg-base border border-borderTrim hover:border-neonOrange/50 transition-colors group cursor-default`;
+
+                    div.innerHTML = `
+                        <div class="font-medium text-sm truncate mr-4 text-gray-200" title="${escapeHTML(task.titulo)}">${escapeHTML(task.titulo)}</div>
+                        <div class="flex items-center gap-3 shrink-0">
+                            <span class="px-2 py-0.5 rounded text-[0.65rem] font-bold uppercase tracking-wider ${bClass}">${task.estado.replace('_', ' ')}</span>
+                        </div>
+                    `;
+                    list.appendChild(div);
+                });
+
+                renderUserChart(completadasCount, pendientesCount);
+            } catch (err) {
+                console.error(err);
+                list.innerHTML = `<div class="p-4 border border-dashed border-red-500/30 rounded-lg text-red-500 text-sm">Error cargando.</div>`;
+            }
+        }
+
+        function renderUserChart(completadas, pendientes) {
+            const ctx = document.getElementById('userMissionChart').getContext('2d');
+            const total = completadas + pendientes;
+            const tasaText = total === 0 ? '0%' : Math.round((completadas / total) * 100) + '%';
+
+            if (userChart) {
+                userChart.destroy();
+            }
+
+            userChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Completadas', 'En Curso'],
+                    datasets: [{
+                        data: [completadas, pendientes],
+                        backgroundColor: ['#10b981', '#ff5e00'],
+                        borderColor: '#2a2a2a',
+                        borderWidth: 4,
+                        hoverOffset: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '75%',
+                    plugins: {
+                        legend: { position: 'bottom', labels: { color: '#f3f4f6', font: { family: '"Space Grotesk"', size: 14 } } },
+                        tooltip: { backgroundColor: '#2a2a2a', titleColor: '#ff5e00', bodyColor: '#fff', padding: 12 }
+                    }
+                },
+                plugins: [{
+                    id: 'textCenter',
+                    beforeDraw: function (chart) {
+                        var width = chart.width, height = chart.height, ctx = chart.ctx;
+                        ctx.restore();
+                        var legendHeight = chart.legend ? chart.legend.height : 0;
+                        var centerY = (height - legendHeight) / 2;
+
+                        var fontSize = (height / 120).toFixed(2);
+                        ctx.font = "bold " + fontSize + "em 'Space Grotesk'";
+                        ctx.textBaseline = "middle";
+                        ctx.fillStyle = "#ffffff";
+
+                        var text = tasaText, textX = Math.round((width - ctx.measureText(text).width) / 2), textY = centerY - 10;
+                        ctx.fillText(text, textX, textY);
+
+                        ctx.font = "bold " + (fontSize * 0.25).toFixed(2) + "em 'Space Grotesk'";
+                        ctx.fillStyle = "#ff5e00";
+                        var subText = "TASA DE ÉXITO", subTextX = Math.round((width - ctx.measureText(subText).width) / 2), subTextY = centerY + 25;
+                        ctx.fillText(subText, subTextX, subTextY);
+                        ctx.save();
+                    }
+                }]
+            });
+        }
+
+        async function deleteUser() {
+            if (!selectedUserId) return;
+            if (!confirm('INICIANDO PURGA\n\n¿El operador será eliminado permanentemente del sistema?')) return;
+
+            try {
+                const res = await authFetch(`/usuarios/${selectedUserId}`, { method: 'DELETE' });
+                if (res.status === 401) throw new Error("No tienes privilegios. Sesión expirada o intento ilegal.");
+                if (!res.ok && res.status !== 204) throw new Error('Error al desconectar unidad');
+
+                showToast('Unidad purgada exitosamente');
+
+                // If user deleted themselves
+                if (localStorage.getItem('username') && users.find(u => u.id === selectedUserId)?.username === localStorage.getItem('username')) {
+                    localStorage.removeItem('token');
+                    localStorage.removeItem('username');
+                    window.location.href = "/";
+                    return;
+                }
+
+                await fetchUsers();
+                selectUser(null);
+            } catch (e) { showToast(e.message, true); }
+        }
+
+        init();
+    </script>
+</body>
+
+</html>

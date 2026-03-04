@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="es" class="dark">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="view-transition" content="same-origin" />
+    <title>Objetivos | Neon UI</title>
+
+    <!-- Google Fonts: Space Grotesk -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Space Grotesk"', 'sans-serif'],
+                    },
+                    colors: {
+                        base: '#222222',
+                        surface: '#2a2a2a',
+                        surfaceHover: '#333333',
+                        neonOrange: '#ff5e00',
+                        neonOrangeDim: 'rgba(255, 94, 0, 0.15)',
+                        danger: '#ef4444',
+                        success: '#10b981',
+                        borderTrim: '#404040'
+                    },
+                    boxShadow: {
+                        'neon-glow': '0 0 15px rgba(255, 94, 0, 0.5)',
+                        'neon-glow-lg': '0 0 25px rgba(255, 94, 0, 0.6)'
+                    }
+                }
+            }
+        }
+    </script>
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            -webkit-font-smoothing: antialiased;
+        }
+
+        ::view-transition-old(root),
+        ::view-transition-new(root) {
+            animation-duration: 0.4s;
+            animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+        }
+
+        ::view-transition-old(root) {
+            animation-name: fade-out;
+        }
+
+        ::view-transition-new(root) {
+            animation-name: slide-up-fade-in;
+        }
+
+        @keyframes fade-out {
+            from {
+                opacity: 1;
+            }
+
+            to {
+                opacity: 0;
+            }
+        }
+
+        @keyframes slide-up-fade-in {
+            from {
+                opacity: 0;
+                transform: translateY(15px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .animate-enter {
+            animation: slide-up-fade-in 0.6s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+        }
+
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: theme('colors.base');
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: theme('colors.borderTrim');
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: theme('colors.neonOrange');
+        }
+
+        .task-item {
+            transition: all 0.2s ease-out;
+            animation: stagger-in 0.4s ease-out backwards;
+        }
+
+        @keyframes stagger-in {
+            from {
+                opacity: 0;
+                transform: translateY(10px) scale(0.98);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+    </style>
+</head>
+
+<body
+    class="bg-base text-gray-100 min-h-screen flex flex-col items-center p-4 selection:bg-neonOrange selection:text-white">
+
+
+    <div id="app-content" class="w-full max-w-5xl relative animate-enter">
+
+        <!-- Sidebar / Top Nav -->
+        <nav
+            class="w-full bg-surface/80 border-b border-borderTrim backdrop-blur-md px-6 py-3 flex items-center justify-between z-20 sticky top-0 shadow-lg mb-8 rounded-b-xl">
+            <div class="flex items-center gap-6">
+                <!-- Branding or Home -->
+                <div class="flex items-center gap-2 text-white font-bold tracking-wide mr-4">
+                    <i class="ph-fill ph-circles-three text-neonOrange text-xl shadow-neon-glow"></i>
+                    <span class="hidden sm:inline">OP-TRACKER</span>
+                </div>
+
+                <a href="/todo.html"
+                    class="flex items-center gap-2 text-neonOrange hover:text-white hover:drop-shadow-[0_0_5px_rgba(255,94,0,0.5)] transition-all text-sm font-medium">
+                    <i class="ph ph-list-checks fs-4"></i>
+                    <span style="view-transition-name: nav-todo;">Mis Objetivos</span>
+                </a>
+                <a href="/global-dashboard.html" id="nav-global"
+                    class="hidden items-center gap-2 text-gray-400 hover:text-white hover:drop-shadow-[0_0_5px_rgba(255,255,255,0.5)] transition-all text-sm font-medium">
+                    <i class="ph ph-globe-hemisphere-west fs-4"></i>
+                    <span class="inline-block">Dashboard Global</span>
+                </a>
+                <a href="/users.html" id="nav-users"
+                    class="hidden items-center gap-2 text-gray-400 hover:text-white hover:drop-shadow-[0_0_5px_rgba(255,255,255,0.5)] transition-all text-sm font-medium">
+                    <i class="ph ph-users fs-4"></i>
+                    <span class="inline-block" style="view-transition-name: nav-text;">Gestionar Usuarios</span>
+                </a>
+            </div>
+
+            <button onclick="logout()"
+                class="flex items-center gap-2 px-4 py-2 rounded-lg bg-danger/10 border border-danger/30 text-danger hover:bg-danger hover:text-white hover:shadow-[0_0_15px_rgba(239,68,68,0.5)] transition-all text-sm font-bold tracking-wider">
+                <i class="ph ph-power"></i>
+                <span class="hidden sm:inline">DESCONECTAR</span>
+            </button>
+        </nav>
+
+        <div style="view-transition-name: main-container;"
+            class="bg-surface border border-borderTrim rounded-2xl shadow-xl p-6 md:p-8 backdrop-blur-xl relative overflow-hidden">
+            <div
+                class="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-transparent via-neonOrange to-transparent opacity-70">
+            </div>
+
+            <div class="text-center mb-8">
+                <h1 class="text-3xl md:text-4xl font-bold tracking-tight mb-2 text-white drop-shadow-md">Tus Objetivos
+                </h1>
+                <p class="text-neonOrange text-sm font-medium uppercase tracking-widest"><span id="welcome-user"></span>
+                    - Sesión Activa</p>
+            </div>
+
+            <!-- Global Dashboard Chart -->
+            <div
+                class="mb-6 w-full aspect-square md:aspect-[4/3] bg-base border border-borderTrim rounded-2xl p-6 relative">
+                <canvas id="missionChart"></canvas>
+            </div>
+
+            <!-- Global Dashboard Metrics (Public/Global Data) -->
+            <div class="grid grid-cols-3 gap-4">
+                <div class="bg-base border border-borderTrim rounded-xl p-4 text-center">
+                    <div class="text-gray-500 text-xs font-bold uppercase tracking-widest mb-1">Completadas</div>
+                    <div class="text-3xl font-bold text-emerald-400 drop-shadow-[0_0_5px_rgba(16,185,129,0.5)]"
+                        id="dash-completadas">-</div>
+                </div>
+                <div class="bg-base border border-borderTrim rounded-xl p-4 text-center relative overflow-hidden">
+                    <div class="absolute inset-0 bg-neonOrangeDim opacity-30 pointer-events-none"></div>
+                    <div class="text-gray-500 text-xs font-bold uppercase tracking-widest mb-1 relative">En Curso</div>
+                    <div class="text-3xl font-bold text-neonOrange drop-shadow-[0_0_8px_rgba(255,94,0,0.5)] relative"
+                        id="dash-pendientes">-</div>
+                </div>
+                <div class="bg-base border border-borderTrim rounded-xl p-4 text-center">
+                    <div class="text-gray-500 text-xs font-bold uppercase tracking-widest mb-1">Tasa Éxito</div>
+                    <div class="text-3xl font-bold text-white drop-shadow-[0_0_5px_rgba(255,255,255,0.5)]"
+                        id="dash-tasa">-</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Script Application Logic -->
+    <script>
+        let dashboardChart = null;
+
+        Chart.defaults.color = '#9ca3af';
+        Chart.defaults.font.family = '"Space Grotesk", sans-serif';
+
+        function logout() {
+            localStorage.removeItem('token');
+            localStorage.removeItem('username');
+            localStorage.removeItem('rol');
+            window.location.href = '/index.html';
+        }
+
+        function getToken() { return localStorage.getItem('token'); }
+
+        async function fetchDashboard() {
+            try {
+                const res = await fetch('/dashboard/personal', {
+                    headers: { 'Authorization': `Bearer ${getToken()}` }
+                });
+                if (res.status === 401) { logout(); return; }
+                if (res.ok) {
+                    const stats = await res.json();
+                    document.getElementById('dash-completadas').textContent = stats.tareas_completadas;
+                    document.getElementById('dash-pendientes').textContent = stats.tareas_pendientes;
+                    document.getElementById('dash-tasa').textContent = stats.tasa_exito;
+
+                    renderChart(stats);
+                }
+            } catch (err) { console.error("Error dashboard", err); }
+        }
+
+        function renderChart(stats) {
+            const ctx = document.getElementById('missionChart').getContext('2d');
+            const completadas = stats.tareas_completadas;
+            const pendientes = stats.tareas_pendientes;
+            const total = completadas + pendientes;
+            const hasData = total > 0;
+
+            if (dashboardChart) {
+                dashboardChart.destroy();
+            }
+
+            dashboardChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: hasData ? ['Completadas', 'En Curso'] : ['Sin Datos'],
+                    datasets: [{
+                        data: hasData ? [completadas, pendientes] : [1],
+                        backgroundColor: hasData ? ['#10b981', '#ff5e00'] : ['#333333'],
+                        borderColor: '#2a2a2a',
+                        borderWidth: 4,
+                        hoverOffset: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '75%',
+                    plugins: {
+                        legend: {
+                            display: hasData,
+                            position: 'bottom',
+                            labels: {
+                                color: '#f3f4f6',
+                                padding: 20,
+                                font: { family: '"Space Grotesk"', size: 14 }
+                            }
+                        },
+                        tooltip: {
+                            enabled: hasData,
+                            backgroundColor: '#2a2a2a',
+                            titleColor: '#ff5e00',
+                            bodyColor: '#fff',
+                            borderColor: '#404040',
+                            borderWidth: 1,
+                            padding: 12,
+                            callbacks: {
+                                label: function (context) {
+                                    return `  ${context.label}: ${context.raw} objetivos`;
+                                }
+                            }
+                        }
+                    }
+                },
+                plugins: [{
+                    id: 'textCenter',
+                    beforeDraw: function (chart) {
+                        if (!hasData) return;
+                        var width = chart.width,
+                            height = chart.height,
+                            ctx = chart.ctx;
+
+                        ctx.restore();
+                        // Calcular centro teniendo en cuenta el espacio de la leyenda inferior
+                        var legendHeight = chart.legend ? chart.legend.height : 0;
+                        var centerY = (height - legendHeight) / 2;
+
+                        // Tasa de éxito (Texto principal)
+                        var fontSize = (height / 120).toFixed(2);
+                        ctx.font = "bold " + fontSize + "em 'Space Grotesk'";
+                        ctx.textBaseline = "middle";
+                        ctx.fillStyle = "#ffffff";
+
+                        var text = stats.tasa_exito,
+                            textX = Math.round((width - ctx.measureText(text).width) / 2),
+                            textY = centerY - 10;
+
+                        ctx.fillText(text, textX, textY);
+
+                        // Subtítulo
+                        ctx.font = "bold " + (fontSize * 0.25).toFixed(2) + "em 'Space Grotesk'";
+                        ctx.fillStyle = "#ff5e00";
+                        var subText = "TASA DE ÉXITO",
+                            subTextX = Math.round((width - ctx.measureText(subText).width) / 2),
+                            subTextY = centerY + 25;
+
+                        ctx.fillText(subText, subTextX, subTextY);
+                        ctx.save();
+                    }
+                }]
+            });
+        }
+
+        function bootstrapApp() {
+            if (!getToken()) {
+                window.location.href = '/index.html';
+                return;
+            }
+
+            if (localStorage.getItem('rol') === 'admin') {
+                const navUsers = document.getElementById('nav-users');
+                navUsers.classList.remove('hidden');
+                navUsers.classList.add('flex');
+
+                const navGlobal = document.getElementById('nav-global');
+                navGlobal.classList.remove('hidden');
+                navGlobal.classList.add('flex');
+            }
+
+            document.getElementById('welcome-user').textContent = localStorage.getItem('username') || 'Unidad';
+            fetchDashboard();
+        }
+
+        // INIT
+        bootstrapApp();
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="es" class="dark">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="view-transition" content="same-origin" />
+    <title>Objetivos | Neon UI</title>
+
+    <!-- Google Fonts: Space Grotesk -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Space Grotesk"', 'sans-serif'],
+                    },
+                    colors: {
+                        base: '#222222',
+                        surface: '#2a2a2a',
+                        surfaceHover: '#333333',
+                        neonOrange: '#ff5e00',
+                        neonOrangeDim: 'rgba(255, 94, 0, 0.15)',
+                        danger: '#ef4444',
+                        success: '#10b981',
+                        borderTrim: '#404040'
+                    },
+                    boxShadow: {
+                        'neon-glow': '0 0 15px rgba(255, 94, 0, 0.5)',
+                        'neon-glow-lg': '0 0 25px rgba(255, 94, 0, 0.6)'
+                    }
+                }
+            }
+        }
+    </script>
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            -webkit-font-smoothing: antialiased;
+        }
+
+        ::view-transition-old(root),
+        ::view-transition-new(root) {
+            animation-duration: 0.4s;
+            animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+        }
+
+        ::view-transition-old(root) {
+            animation-name: fade-out;
+        }
+
+        ::view-transition-new(root) {
+            animation-name: slide-up-fade-in;
+        }
+
+        @keyframes fade-out {
+            from {
+                opacity: 1;
+            }
+
+            to {
+                opacity: 0;
+            }
+        }
+
+        @keyframes slide-up-fade-in {
+            from {
+                opacity: 0;
+                transform: translateY(15px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .animate-enter {
+            animation: slide-up-fade-in 0.6s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+        }
+
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: theme('colors.base');
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: theme('colors.borderTrim');
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: theme('colors.neonOrange');
+        }
+
+        .task-item {
+            transition: all 0.2s ease-out;
+            animation: stagger-in 0.4s ease-out backwards;
+        }
+
+        @keyframes stagger-in {
+            from {
+                opacity: 0;
+                transform: translateY(10px) scale(0.98);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+    </style>
+</head>
+
+<body
+    class="bg-base text-gray-100 min-h-screen flex items-center justify-center p-4 selection:bg-neonOrange selection:text-white">
+
+    <!-- Auth Overlay -->
+    <div id="auth-overlay"
+        class="fixed inset-0 z-[100] bg-base flex flex-col items-center justify-center p-4 animate-enter">
+        <div
+            class="w-full max-w-sm bg-surface border border-borderTrim rounded-2xl p-8 relative shadow-[0_0_30px_rgba(255,94,0,0.15)] focus-within:shadow-[0_0_40px_rgba(255,94,0,0.3)] transition-all">
+            <h2 class="text-2xl font-bold text-white tracking-tight text-center mb-1" id="auth-title">System Access</h2>
+            <p class="text-neonOrange text-xs font-bold text-center tracking-widest uppercase mb-6" id="auth-subtitle">
+                IDENTIFICACIÓN REQUERIDA</p>
+            <form id="auth-form" onsubmit="handleAuth(event)">
+                <input type="text" id="auth-user"
+                    class="w-full bg-base border border-borderTrim rounded-lg px-4 py-3 text-white mb-4 outline-none focus:border-neonOrange focus:shadow-neon-glow transition-all"
+                    placeholder="ID. Operador (Username)" required>
+                <input type="password" id="auth-pass"
+                    class="w-full bg-base border border-borderTrim rounded-lg px-4 py-3 text-white mb-6 outline-none focus:border-neonOrange focus:shadow-neon-glow transition-all"
+                    placeholder="Código Secreto" required>
+                <button type="submit" id="auth-btn"
+                    class="w-full bg-neonOrange text-base px-6 py-3 font-bold text-black hover:bg-[#ff7b33] rounded-lg mb-4 shadow-[0_0_15px_rgba(255,94,0,0.4)] transition-all">INGRESAR</button>
+            </form>
+            <div class="text-center mt-2 border-t border-borderTrim pt-4">
+                <button type="button" onclick="toggleAuthMode()"
+                    class="text-gray-400 text-sm hover:text-white transition-colors" id="auth-toggle-btn">
+                    ¿Nueva unidad? <span class="text-neonOrange font-medium">Registrar Acceso</span>
+                </button>
+            </div>
+            <div id="auth-error"
+                class="hidden mt-4 text-center text-danger text-sm font-medium bg-danger/10 border border-danger/30 p-2 rounded">
+            </div>
+        </div>
+    </div>
+
+
+
+    <!-- Script Application Logic -->
+    <script>
+        let authMode = 'login'; // login | register
+
+        // AUTH SYSTEM
+        function toggleAuthMode() {
+            authMode = authMode === 'login' ? 'register' : 'login';
+            document.getElementById('auth-title').textContent = authMode === 'login' ? 'System Access' : 'Registro Operativo';
+            document.getElementById('auth-btn').textContent = authMode === 'login' ? 'INGRESAR' : 'CREAR IDENTIDAD';
+            document.getElementById('auth-toggle-btn').innerHTML = authMode === 'login' ?
+                '¿Nueva unidad? <span class="text-neonOrange font-medium">Registrar Acceso</span>' :
+                '¿Ya existes? <span class="text-neonOrange font-medium">Iniciar Sesión</span>';
+            document.getElementById('auth-error').classList.add('hidden');
+        }
+
+        async function handleAuth(e) {
+            e.preventDefault();
+            const user = document.getElementById('auth-user').value.trim();
+            const pass = document.getElementById('auth-pass').value.trim();
+            const errDiv = document.getElementById('auth-error');
+
+            try {
+                const endpoint = authMode === 'login' ? '/login' : '/registro';
+                const res = await fetch(endpoint, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username: user, password: pass })
+                });
+                const data = await res.json();
+
+                if (!res.ok) throw new Error(data.error);
+
+                if (authMode === 'register') {
+                    // Auto login if register is active, but we need the token. Register doesn't return token instantly according to spec.
+                    // We must log them in manually.
+                    const loginRes = await fetch('/login', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ username: user, password: pass })
+                    });
+                    const loginData = await loginRes.json();
+                    if (!loginRes.ok) throw new Error(loginData.error);
+
+                    localStorage.setItem('token', loginData.token);
+                    localStorage.setItem('username', loginData.username);
+                    localStorage.setItem('rol', loginData.rol || 'user');
+                } else {
+                    localStorage.setItem('token', data.token);
+                    localStorage.setItem('username', data.username);
+                    localStorage.setItem('rol', data.rol || 'user');
+                }
+
+                bootstrapApp();
+            } catch (err) {
+                errDiv.textContent = err.message;
+                errDiv.classList.remove('hidden');
+            }
+        }
+
+        function logout() {
+            localStorage.removeItem('token');
+            localStorage.removeItem('username');
+            document.getElementById('app-content').classList.add('hidden');
+            document.getElementById('auth-overlay').classList.remove('hidden');
+        }
+
+        function getToken() { return localStorage.getItem('token'); }
+
+
+
+        function bootstrapApp() {
+            if (getToken()) {
+                window.location.href = '/dashboard.html';
+            } else {
+                document.getElementById('auth-overlay').classList.remove('hidden');
+            }
+        }
+
+        // INIT
+        bootstrapApp();
+    </script>
+</body>
+
+</html>
