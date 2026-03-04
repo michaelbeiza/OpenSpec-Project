@@ -170,11 +170,31 @@
                 class="p-4 border-b border-borderTrim bg-base text-gray-400 text-sm font-bold tracking-widest uppercase">
                 Red Global Operativa
             </div>
-            <div class="flex-1 overflow-y-auto">
-                <ul id="user-list" class="flex flex-col">
-                    <div class="flex justify-center py-8"><i
-                            class="ph-bold ph-spinner animate-spin text-neonOrange text-2xl"></i></div>
-                </ul>
+            <div class="flex-1 overflow-y-auto" id="users-accordion">
+                <!-- Admin Section -->
+                <div class="border-b border-borderTrim bg-base">
+                    <button onclick="toggleSection('admin')"
+                        class="w-full px-6 py-4 flex justify-between items-center text-neonOrange text-sm font-bold tracking-widest hover:bg-surfaceHover transition-colors border-l-4 border-l-transparent focus:outline-none">
+                        <span class="flex items-center gap-2"><i class="ph-bold ph-shield-star text-lg"></i>
+                            ADMINISTRADORES</span>
+                        <i class="ph-bold ph-caret-down text-lg transition-transform duration-300" id="admin-icon"></i>
+                    </button>
+                    <ul id="admin-list" class="flex flex-col transition-all duration-300 origin-top">
+                        <div class="flex justify-center py-8"><i
+                                class="ph-bold ph-spinner animate-spin text-neonOrange text-2xl"></i></div>
+                    </ul>
+                </div>
+
+                <!-- User Section -->
+                <div class="border-b border-borderTrim bg-base">
+                    <button onclick="toggleSection('user')"
+                        class="w-full px-6 py-4 flex justify-between items-center text-gray-400 hover:text-white text-sm font-bold tracking-widest hover:bg-surfaceHover transition-colors border-l-4 border-l-transparent focus:outline-none">
+                        <span class="flex items-center gap-2"><i class="ph-bold ph-users text-lg"></i> OPERADORES</span>
+                        <i class="ph-bold ph-caret-down text-lg transition-transform duration-300" id="user-icon"></i>
+                    </button>
+                    <ul id="user-list" class="flex flex-col transition-all duration-300 origin-top">
+                    </ul>
+                </div>
             </div>
         </div>
 
@@ -268,6 +288,7 @@
         Chart.defaults.color = '#9ca3af';
         Chart.defaults.font.family = '"Space Grotesk", sans-serif';
 
+        const adminListEl = document.getElementById('admin-list');
         const userListEl = document.getElementById('user-list');
         const emptyPane = document.getElementById('empty-pane');
         const detailsPane = document.getElementById('details-pane');
@@ -317,9 +338,25 @@
             } catch { showToast('Error conectando al servidor', true); }
         }
 
+        function toggleSection(type) {
+            const list = document.getElementById(type + '-list');
+            const icon = document.getElementById(type + '-icon');
+
+            if (list.classList.contains('hidden')) {
+                list.classList.remove('hidden');
+                icon.style.transform = 'rotate(0deg)';
+            } else {
+                list.classList.add('hidden');
+                icon.style.transform = 'rotate(-90deg)';
+            }
+        }
+
         function renderUserList() {
+            adminListEl.innerHTML = '';
             userListEl.innerHTML = '';
+
             if (users.length === 0) {
+                adminListEl.innerHTML = `<div class="p-6 text-center text-gray-600">Registro vacío.</div>`;
                 userListEl.innerHTML = `<div class="p-6 text-center text-gray-600">Registro vacío.</div>`;
                 if (selectedUserId) selectUser(null);
                 return;
@@ -327,17 +364,49 @@
 
             if (selectedUserId && !users.find(u => u.id === selectedUserId)) selectUser(null);
 
-            users.forEach(user => {
+            const admins = users.filter(u => u.rol === 'admin');
+            const normals = users.filter(u => u.rol !== 'admin');
+
+            const renderItem = (user, container) => {
                 const initial = user.username ? user.username.charAt(0).toUpperCase() : '?';
+                const isActive = selectedUserId === user.id;
                 const li = document.createElement('li');
-                li.className = `list-group-item-user flex items-center gap-3 px-6 py-4 border-b border-borderTrim cursor-pointer hover:bg-surfaceHover border-l-4 border-l-transparent ${selectedUserId === user.id ? 'active' : ''}`;
+
+                // Si es admin tiene borde naranja si es activo, si es normal se puede mantener igual o azul
+                const activeColorClass = user.rol === 'admin' ? 'theme(\'colors.neonOrange\')' : 'theme(\'colors.success\')';
+
+                li.className = `list-group-item-user flex items-center gap-3 px-6 py-4 border-b border-borderTrim cursor-pointer hover:bg-surfaceHover border-l-4 border-l-transparent ${isActive ? 'active' : ''}`;
                 li.onclick = () => selectUser(user.id);
+
+                // Add conditional styling based on role for the active state
+                if (isActive) {
+                    li.style.backgroundColor = 'rgba(255, 94, 0, 0.15)';
+                    li.style.borderLeftColor = '#ff5e00';
+                    li.style.boxShadow = 'inset 4px 0 0 #ff5e00';
+                } else {
+                    li.style.backgroundColor = '';
+                    li.style.borderLeftColor = 'transparent';
+                    li.style.boxShadow = 'none';
+                }
+
                 li.innerHTML = `
-                    <div class="user-avatar w-10 h-10 rounded-full bg-base border border-borderTrim flex items-center justify-center font-bold text-gray-400 shrink-0 transition-all">${initial}</div>
-                    <div class="truncate text-sm font-medium tracking-wide">${escapeHTML(user.username)}</div>
+                    <div class="user-avatar w-10 h-10 rounded-full bg-base border ${isActive ? 'border-neonOrange text-white bg-neonOrange shadow-neon-glow' : 'border-borderTrim text-gray-400'} flex items-center justify-center font-bold shrink-0 transition-all">${initial}</div>
+                    <div class="truncate text-sm font-medium tracking-wide ${isActive ? 'text-white' : 'text-gray-300'}">${escapeHTML(user.username)}</div>
                 `;
-                userListEl.appendChild(li);
-            });
+                container.appendChild(li);
+            };
+
+            if (admins.length === 0) {
+                adminListEl.innerHTML = `<div class="p-4 text-center text-sm text-gray-600">Sin administradores.</div>`;
+            } else {
+                admins.forEach(user => renderItem(user, adminListEl));
+            }
+
+            if (normals.length === 0) {
+                userListEl.innerHTML = `<div class="p-4 text-center text-sm text-gray-600">Sin operadores.</div>`;
+            } else {
+                normals.forEach(user => renderItem(user, userListEl));
+            }
         }
 
         async function selectUser(id) {
@@ -361,16 +430,19 @@
             document.getElementById('edit-id').value = user.id;
 
             const myId = localStorage.getItem('id');
+            const purgarContainer = document.getElementById('purgar-container');
             const purgarBtn = document.getElementById('purgar-btn');
             const purgarText = document.getElementById('purgar-text');
 
             if (user.id === myId) {
                 purgarBtn.style.display = 'none';
-                purgarText.textContent = 'Autoprotección: No puedes purgar tu propia unidad administrativa.';
+                purgarText.innerHTML = '<i class="ph-bold ph-shield-check text-lg mr-1"></i> Autoprotección activada: No puedes purgar tu propia cuenta de administrador.';
                 purgarText.classList.add('text-neonOrange');
+                purgarText.classList.remove('text-gray-500');
             } else {
                 purgarBtn.style.display = 'flex';
-                purgarText.textContent = 'Purgar a un usuario elimina por completo sus credenciales de acceso y sus objetivos asosciados irrevocablemente.';
+                purgarText.innerHTML = 'Purgar a un usuario elimina por completo sus credenciales de acceso y sus objetivos asociados irrevocablemente.';
+                purgarText.classList.add('text-gray-500');
                 purgarText.classList.remove('text-neonOrange');
             }
 
