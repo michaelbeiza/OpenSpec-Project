@@ -203,10 +203,12 @@
                     if (!loginRes.ok) throw new Error(loginData.error);
 
                     localStorage.setItem('token', loginData.token);
+                    localStorage.setItem('id', loginData.id);
                     localStorage.setItem('username', loginData.username);
                     localStorage.setItem('rol', loginData.rol || 'user');
                 } else {
                     localStorage.setItem('token', data.token);
+                    localStorage.setItem('id', data.id);
                     localStorage.setItem('username', data.username);
                     localStorage.setItem('rol', data.rol || 'user');
                 }

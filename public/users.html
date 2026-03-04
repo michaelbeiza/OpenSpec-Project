@@ -213,13 +213,14 @@
                         disabled>
                 </div>
 
-                <div class="flex flex-wrap gap-3 mb-8 pb-6 border-b border-borderTrim">
-                    <button
+                <div class="flex flex-wrap gap-3 mb-8 pb-6 border-b border-borderTrim" id="purgar-container">
+                    <button id="purgar-btn"
                         class="bg-transparent border border-danger text-danger hover:bg-danger/10 font-bold px-6 py-3 rounded-lg flex items-center justify-center gap-2 transition-colors"
                         onclick="deleteUser()">
                         <i class="ph-bold ph-trash"></i> PURGAR UNIDAD
                     </button>
-                    <p class="text-xs text-gray-500 mt-2 ml-2 max-w-sm">Purgar a un usuario elimina por completo sus
+                    <p id="purgar-text" class="text-xs text-gray-500 mt-2 ml-2 max-w-sm">Purgar a un usuario elimina por
+                        completo sus
                         credenciales de acceso y sus objetivos asosciados irrevocablemente.</p>
                 </div>
 
@@ -358,6 +359,20 @@
             document.getElementById('pane-avatar').textContent = user.username.charAt(0).toUpperCase();
             document.getElementById('disp-name').textContent = Math.random() > 0.5 ? 'Unidad Operativa ' + user.username : 'Especialista ' + user.username;
             document.getElementById('edit-id').value = user.id;
+
+            const myId = localStorage.getItem('id');
+            const purgarBtn = document.getElementById('purgar-btn');
+            const purgarText = document.getElementById('purgar-text');
+
+            if (user.id === myId) {
+                purgarBtn.style.display = 'none';
+                purgarText.textContent = 'Autoprotección: No puedes purgar tu propia unidad administrativa.';
+                purgarText.classList.add('text-neonOrange');
+            } else {
+                purgarBtn.style.display = 'flex';
+                purgarText.textContent = 'Purgar a un usuario elimina por completo sus credenciales de acceso y sus objetivos asosciados irrevocablemente.';
+                purgarText.classList.remove('text-neonOrange');
+            }
 
             await renderAssignedTasks(user.id);
         }
