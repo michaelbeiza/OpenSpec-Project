@@ -57,9 +57,9 @@ let db;
             const pDemo = await bcrypt.hash('demo123', salt);
             const pTest = await bcrypt.hash('test123', salt);
 
-            await db.run('INSERT INTO usuarios (id, username, password_hash, rol) VALUES (?, ?, ?, ?)', ['demo_admin', 'admin', pAdmin, 'admin']);
-            await db.run('INSERT INTO usuarios (id, username, password_hash, rol) VALUES (?, ?, ?, ?)', ['demo_user1', 'demo', pDemo, 'user']);
-            await db.run('INSERT INTO usuarios (id, username, password_hash, rol) VALUES (?, ?, ?, ?)', ['demo_test', 'test', pTest, 'user']);
+            await db.run('INSERT OR IGNORE INTO usuarios (id, username, password_hash, rol) VALUES (?, ?, ?, ?)', ['demo_admin', 'admin', pAdmin, 'admin']);
+            await db.run('INSERT OR IGNORE INTO usuarios (id, username, password_hash, rol) VALUES (?, ?, ?, ?)', ['demo_user1', 'demo', pDemo, 'user']);
+            await db.run('INSERT OR IGNORE INTO usuarios (id, username, password_hash, rol) VALUES (?, ?, ?, ?)', ['demo_test', 'test', pTest, 'user']);
             console.log('Usuarios demo generados y listos para pruebas en SQLite:');
             console.log('- admin / admin123');
             console.log('- demo / demo123');
@@ -166,6 +166,11 @@ app.post('/login', async (req, res) => {
 app.delete('/usuarios/:id', verifyToken, verifyAdmin, async (req, res) => {
     try {
         const userId = req.params.id;
+
+        if (userId === req.userId) {
+            return res.status(403).json({ error: 'Operación denegada: no puedes purgar tu propia cuenta de administrador.' });
+        }
+
         const user = await db.get('SELECT id FROM usuarios WHERE id = ?', userId);
 
         if (!user) return res.status(404).json({ error: 'Usuario no encontrado.' });

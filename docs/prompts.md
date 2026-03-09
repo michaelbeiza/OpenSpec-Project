@@ -264,3 +264,81 @@ Este documento registra los prompts y solicitudes utilizadas para modificar y ge
 
 **Mensaje devuelto por el agente:**
 > "He actualizado el archivo `README.md` con toda la información solicitada. Ahora incluye: Título y Descripción de 'Neon Tracker', especificación detallada de todas las tecnologías, una sección explicando las medidas de seguridad RBAC e inyecciones SQL mediante Prepared Statements en SQLite3, e instrucciones claras de ejecución mostrando las cuentas demo disponibles."
+
+---
+
+## 19. Corrección de Bugs JS y Lógica de Navegación por Rol
+**Fecha y Hora:** 2026-03-04 10:00 (Aprox)
+**Agente:** Agente Front-end
+**Objetivo:** Solucionar excepciones JavaScript al crear tareas y habilitar/ocultar botones de navegación según si la sesión es de Administrador o Usuario.
+
+**Prompt/Solicitud:**
+> "recordemos que tiene que haber botones para ver tus objetivos y poder desconectar cuando ves el dashboard... identifica los errores a la hora de crear nuevos objetivos... revisemos el error de lifeStyles is not defined que sale cuando intentamos crear un nuevo objetivo... revisa el error de escapeHTML"
+
+**Mensaje devuelto por el agente:**
+> "Corregidos los errores sintácticos de JavaScript (`lifeStyles` y colocación de bloque `catch` para `escapeHTML`). Además se introdujo la lógica de rol (`bootstrapApp()`) que revela los botones de 'Gestionar Usuarios' o 'Dashboard Global' exclusivamente a los administradores."
+
+---
+
+## 20. Desacoplamiento de Dashboards y Gráficos Donut Personales
+**Fecha y Hora:** 2026-03-04 10:30 (Aprox)
+**Agente:** Agente Full-Stack
+**Objetivo:** Dividir el tablero en un panel propio (`dashboard.html`) y uno administrativo (`global-dashboard.html`), además de inyectar gráficos por cada empleado en Gestión de Usuarios.
+
+**Prompt/Solicitud:**
+> "propongo la idea de que el dashboard de la grafica de donut sea personal, cada uno verá la suya propia de cada usuario de objetivos, luego habra un apartado diferente en donde se podra acceder para ver el grafico global de todos los usuarios... hay que poder enseñar los datos de la grafica de donut de cada objetivo personal de cada usuario"
+
+**Mensaje devuelto por el agente:**
+> "El tráfico de la API se dividió (`GET /dashboard/personal` y `GET /dashboard`). El anterior dashboard ahora es personal, se forjó el botón del Dashboard Global y, al seleccionar una unidad en la lista de gestión de usuarios, el administrador verá renderizado un Gráfico Chart.js Donut interactivo específico con las tareas completadas/pendientes de esa persona."
+
+---
+
+## 21. Refactorización Estética: Consolidación del Modo Oscuro
+**Fecha y Hora:** 2026-03-04 11:00 (Aprox)
+**Agente:** Agente Front-end
+**Objetivo:** Eliminar el fondo blanco no intencionado en todas las páginas causado por un uso inválido de `theme()` de Tailwind en CSS puro.
+
+**Prompt/Solicitud:**
+> "cambiemos el estilo del fondo de la pagina, ahora se ve blanco, cambiemos el color de la pagina a uno oscuro, luego añadiremos empezaremos con el cambio de dashboards"
+
+**Mensaje devuelto por el agente:**
+> "Reparado el CSS global. Se eliminó la etiqueta `theme('colors.base')` y se asignó directamente al HTML `<body>` de todos los archivos las clases de Tailwind `bg-base text-gray-100` para sellar definitivamente el modo oscuro en toda la plataforma."
+
+---
+
+## 22. Rediseño de Interfaz: Top Navbar Constante
+**Fecha y Hora:** 2026-03-04 17:02
+**Agente:** Agente Front-end
+**Objetivo:** Extraer los elementos de navegación flotantes de cada pantalla y unificarlos en una barra de navegación fija superior.
+
+**Prompt/Solicitud:**
+> "revisa todos los codigo de html, vamos a desplazar los botones a un nav superior con un apartado de fondo contrastado en donde los botones se situaran en la parte superior izquierda"
+
+**Mensaje devuelto por el agente:**
+> "Se ha inyectado con éxito una Navbar constante estilo premium con efecto blur (`bg-surface/80` y `backdrop-blur-md`) a lo largo de las 5 páginas internas. El logo se acomodó a la izquierda, junto a los accesos, y el botón de Desconectar a la derecha."
+
+---
+
+## 23. Mapeo Frontend a Rutas API Traducidas (Español)
+**Fecha y Hora:** 2026-03-04 17:19
+**Agente:** Agente Desarrollador Frontend
+**Objetivo:** Adaptar las llamadas HTTP (`fetch`) del dashboard cliente a los nuevos nombres de rutas re-escritas en los endpoints del servidor (`/tareas`, `/usuarios`).
+
+**Prompt/Solicitud:**
+> "revisemos de nuevo las rutas por las que se muestran los dashboards, revisa el backend con la que vayamos a enlazar los datos y verifica si ahora podemos mostrar los datos de forma correcta"
+
+**Mensaje devuelto por el agente:**
+> "Todas las funciones JavaScript de asincronía (`fetchTasks`, `authFetch`, `renderAssignedTasks`) han sido modificadas para consumir `/tareas` y `/usuarios` en lugar de la nomenclatura inglesa previa, estabilizando el flujo de datos sin romper la interfaz."
+
+---
+
+## 24. Segregación de Roles UI y Prevención de Auto-purga
+**Fecha y Hora:** 2026-03-04 14:01
+**Agente:** Agente Front-end
+**Objetivo:** Separar la lista de gestión por tipo de jerarquía de usuario para identificar cuentas falsas, e impedir que un admin se borre la cuenta activamente en esa pantalla.
+
+**Prompt/Solicitud:**
+> "Necesito que cambies la vista de gestion de usuarios quiero que: 1. Separes la lista de usuarios por apartados, quien es administrador y quien es usuario normal... Gestiona la vista propia del perfil en la gestión de usuarios para que no aparezca el boton de purgar unidad y asi impedir que se pueda eleiminar a uno mismo"
+
+**Mensaje devuelto por el agente:**
+> "La interfaz de usuarios mutó a un sistema 'Acordeón' interactivo, dividiendo y filtrando el arreglo JSON al rendearse entre 'ADMINISTRADORES' y 'OPERADORES'. Se programó una protección de cliente interceptando el ID logueado (vía `localStorage.getItem('id')`) que muta dinámicamente el perfil propio para esconder el botón de Purgar textualmente informando sobre la auto-protección."
